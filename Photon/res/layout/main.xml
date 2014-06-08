@@ -7,15 +7,29 @@
         android:weightSum="1">
     <ViewFlipper
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/gallery" android:layout_weight="0.93" android:clickable="false"
-            android:background="@android:drawable/gallery_thumb" android:alpha=".3"
-            android:flipInterval="@android:integer/config_shortAnimTime"/>
-    <ImageButton
-            android:layout_width="71dp"
-            android:layout_height="46dp"
-            android:id="@+id/cameraActivator" android:layout_gravity="center_horizontal"
-            android:src="@android:drawable/ic_menu_camera" android:cropToPadding="false" android:layout_weight="0.04"
-            android:alpha=".7" android:background="@drawable/shutter" android:clickable="true"
-            android:onClick="onClick"/>
+            android:layout_height="100dp"
+            android:id="@+id/gallery" android:layout_weight="0.96" android:clickable="true"
+            android:background="@android:drawable/gallery_thumb"
+            android:flipInterval="@android:integer/config_shortAnimTime" android:animateFirstView="true"
+            style="@android:style/Theme.DeviceDefault.Wallpaper"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_weight="1" android:weightSum="1"
+            android:paddingLeft="110dp" android:paddingRight="110dp">
+        <ImageButton
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:id="@+id/cameraActivator"
+                android:cropToPadding="false"
+                android:alpha=".7" android:background="@android:drawable/ic_menu_camera" android:clickable="true"
+                android:onClick="onClick"/>
+        <ImageButton
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:id="@+id/imageButton"
+                android:background="@android:drawable/ic_menu_add" android:paddingBottom="40dp"
+                android:cropToPadding="false" android:baselineAlignBottom="false"
+                />
+    </LinearLayout>
 </LinearLayout>

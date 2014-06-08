@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android"
+        android:weightSum="1">
+    <ViewFlipper
+            android:layout_width="550dp"
+            android:layout_height="match_parent"
+            android:id="@+id/gallery" android:clickable="true"
+            android:background="@android:drawable/gallery_thumb"
+            android:flipInterval="@android:integer/config_shortAnimTime" android:animateFirstView="true"
+            style="@android:style/Theme.DeviceDefault.Wallpaper"
+            >
+    </ViewFlipper>
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="45dp"
+            android:layout_height="fill_parent" android:paddingBottom="100dp" android:paddingTop="100dp">
+        <ImageButton
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:id="@+id/imageButton"
+                android:background="@android:drawable/ic_menu_add" android:paddingBottom="40dp"
+                android:cropToPadding="false" android:baselineAlignBottom="false"
+                />
+        <ImageButton
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:id="@+id/cameraActivator"
+                android:cropToPadding="false"
+                android:alpha="1" android:background="@android:drawable/ic_menu_camera" android:clickable="true"
+                android:onClick="onClick"/>
+    </LinearLayout>
+</LinearLayout>
