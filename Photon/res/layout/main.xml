@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-        >
-    <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Hello World, Photon"
-            />
-</LinearLayout>
 
+<LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android"
+        android:weightSum="1">
+    <ViewFlipper
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/gallery" android:layout_weight="0.93" android:clickable="false"
+            android:background="@android:drawable/gallery_thumb" android:alpha=".3"
+            android:flipInterval="@android:integer/config_shortAnimTime"/>
+    <ImageButton
+            android:layout_width="71dp"
+            android:layout_height="46dp"
+            android:id="@+id/cameraActivator" android:layout_gravity="center_horizontal"
+            android:src="@android:drawable/ic_menu_camera" android:cropToPadding="false" android:layout_weight="0.04"
+            android:alpha=".7" android:background="@drawable/shutter" android:clickable="true"
+            android:onClick="onClick"/>
+</LinearLayout>
