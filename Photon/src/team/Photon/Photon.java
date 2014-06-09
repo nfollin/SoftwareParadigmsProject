@@ -1,15 +1,11 @@
 package team.Photon;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import java.io.File;
@@ -18,13 +14,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import android.content.Intent;
 import android.os.Environment;
-import android.os.Parcel;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 public class Photon extends Activity {
