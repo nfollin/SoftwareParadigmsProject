@@ -8,9 +8,11 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import java.io.File;
+
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import android.content.Intent;
 import android.os.Environment;
@@ -20,6 +22,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ViewFlipper;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 public class Photon extends Activity {
 
@@ -164,6 +171,7 @@ public class Photon extends Activity {
                         Uri.fromFile(photoFile));
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
+
         }
     }
     @Override
@@ -208,7 +216,48 @@ public class Photon extends Activity {
         }
         return false;
     }
+    public void sendToServer(){
+        new Thread() {
+            public void run() {
 
+
+                try {
+                    HttpClient Client = new DefaultHttpClient();
+
+                    // Create URL string
+
+                    URL url = new URL("http://thelittlemonkey.asuscomm.com");
+
+                    //Log.i("httpget", URL);
+
+                    try {
+                        String SetServerString = "";
+
+                        // Create Request to server and get response
+
+
+                        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+                        String str;
+                        while ((str = in.readLine()) != null) {
+                            SetServerString += str;
+                        }
+                        in.close();
+                        Log.d(DEBUG_TAG, SetServerString);
+                    } catch (IOException e) {
+                        Log.d(DEBUG_TAG, "Error:" + e.getMessage());
+                        Log.d(DEBUG_TAG, "Fail");
+                    }
+                } catch (MalformedURLException e) {
+
+
+                    Log.d(DEBUG_TAG, e.getMessage());
+                    Log.d(DEBUG_TAG, "Fail!");
+
+                }
+            }
+        }.start();
+
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
@@ -230,7 +279,7 @@ public class Photon extends Activity {
             image4.setBackground(getResources().getDrawable(R.drawable.ic_launcher));
             image4.setScaleType(ImageView.ScaleType.CENTER_CROP);
             gallery.addView(image4);
-
+            sendToServer();
 
         }
         if(requestCode== RESULT_LOAD_IMAGE && resultCode==RESULT_OK && data != null){
@@ -257,6 +306,7 @@ public class Photon extends Activity {
             image4.setBackground(getResources().getDrawable(R.drawable.ic_launcher));
             image4.setScaleType(ImageView.ScaleType.CENTER_CROP);
             gallery.addView(image4);
+            sendToServer();
         }
 
     }
