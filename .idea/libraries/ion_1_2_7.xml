@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="ion-1.2.7">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Photon/libs/ion-1.2.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Photon/libs/androidasync-1.2.6.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

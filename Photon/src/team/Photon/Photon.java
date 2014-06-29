@@ -1,19 +1,28 @@
 package team.Photon;
 
 import android.app.Activity;
+
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
-
+import android.util.Base64;
+import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.*;
+import org.apache.http.HttpResponse;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.Future;
+
 import android.content.Intent;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -22,10 +31,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ViewFlipper;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class Photon extends Activity {
@@ -34,6 +46,7 @@ public class Photon extends Activity {
     public static final String DEBUG_TAG = "Photon::";
     protected ViewFlipper gallery;
     static final int REQUEST_IMAGE_CAPTURE = 1;
+    static final String RESTURL="http://localhost:8080/RESTfulImg/rest/file/upload";
     static final int RESULT_LOAD_IMAGE =2;
     static final int REQUEST_TAKE_PHOTO = 1;
     public static String mCurrentPhotoPath;
@@ -222,6 +235,37 @@ public class Photon extends Activity {
 
 
                 try {
+                    sendImage(mCurrentPhotoPath,RESTURL);
+
+
+                } catch (Exception e) {
+                    // handle exception here
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+
+    }
+    private void addImages(JsonObject object){
+
+        Drawable [] drawables = new Drawable[3];
+        drawables[0]=getResources().getDrawable(R.drawable.icon_256);
+        drawables[1]=getResources().getDrawable(R.drawable.shutter);
+        drawables[2]=getResources().getDrawable(R.drawable.ic_launcher);
+        for(int i =0; i < drawables.length; i++){
+            ImageView image= new ImageView(getApplicationContext());
+            image.setBackground(drawables[0]);
+            image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            gallery.addView(image);
+        }
+
+    }
+    public void recieveFromServer(){
+        new Thread() {
+            public void run() {
+
+
+                try {
                     HttpClient Client = new DefaultHttpClient();
 
                     // Create URL string
@@ -258,6 +302,66 @@ public class Photon extends Activity {
         }.start();
 
     }
+    public void sendImage(String fileLocation,String url) {
+        Bitmap bm = BitmapFactory.decodeFile(fileLocation);
+        float lat = 0;
+        float longitude = 0;
+        try {
+            ExifInterface geoData = new ExifInterface(fileLocation);
+            float[] data = new float[2];
+            geoData.getLatLong(data);
+            lat = data[0];
+            longitude = data[1];
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+            byte[] b = baos.toByteArray();
+            HttpClient httpclient = new DefaultHttpClient();
+            String encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
+            HttpPost httppost = new HttpPost(url);
+            File file = new File(fileLocation);
+            ContentBody fb = new FileBody(file, "image/jpeg");
+            MultipartEntity entity = new MultipartEntity(
+                    HttpMultipartMode.STRICT);
+            entity.addPart("file", fb);
+            httppost.setEntity(entity);
+            HttpResponse response = null;
+            try {
+                response = httpclient.execute(httppost);
+            } catch (ClientProtocolException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            System.out.println("file " + response.toString() + "" + "from server");
+
+            JsonObject image = new JsonObject();
+            image.addProperty("latitude", lat);
+            image.addProperty("longitutde", longitude);
+            image.addProperty("imageBase64", encodedImage);
+
+            Future<JsonObject> myjson;
+            myjson = Ion.with(this, url)
+                    .setJsonObjectBody(image)
+                    .asJsonObject()
+
+                    .setCallback(new FutureCallback<JsonObject>() {
+                        @Override
+                        public void onCompleted(Exception e, JsonObject result) {
+                            // do stuff with the result or error
+                            Log.d(Photon.DEBUG_TAG,result.toString());
+                           // addImages(result);
+                        }
+                    });
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
@@ -267,18 +371,7 @@ public class Photon extends Activity {
             image.setBackground(res);
             image.setScaleType(ImageView.ScaleType.CENTER_CROP);
             gallery.addView(image);
-            ImageView image2 = new ImageView(getApplicationContext());
-            image2.setBackground(getResources().getDrawable(R.drawable.icon_256));
-            image2.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            gallery.addView(image2);
-            ImageView image3 = new ImageView(getApplicationContext());
-            image3.setBackground(getResources().getDrawable(R.drawable.shutter));
-            image3.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            gallery.addView(image3);
-            ImageView image4 = new ImageView(getApplicationContext());
-            image4.setBackground(getResources().getDrawable(R.drawable.ic_launcher));
-            image4.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            gallery.addView(image4);
+
             sendToServer();
 
         }
@@ -294,18 +387,7 @@ public class Photon extends Activity {
             image.setImageBitmap(BitmapFactory.decodeFile(picturePath));
             image.setScaleType(ImageView.ScaleType.CENTER_CROP);
             gallery.addView(image);
-            ImageView image2 = new ImageView(getApplicationContext());
-            image2.setBackground(getResources().getDrawable(R.drawable.icon_256));
-            image2.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            gallery.addView(image2);
-            ImageView image3 = new ImageView(getApplicationContext());
-            image3.setBackground(getResources().getDrawable(R.drawable.shutter));
-            image3.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            gallery.addView(image3);
-            ImageView image4 = new ImageView(getApplicationContext());
-            image4.setBackground(getResources().getDrawable(R.drawable.ic_launcher));
-            image4.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            gallery.addView(image4);
+
             sendToServer();
         }
 

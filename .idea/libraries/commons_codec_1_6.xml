@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="commons-codec-1.6">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Photon/libs/commons-codec-1.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Photon/libs/commons-logging-1.1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Photon/libs/fluent-hc-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Photon/libs/httpclient-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Photon/libs/httpclient-cache-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Photon/libs/httpcore-4.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Photon/libs/httpmime-4.3.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
