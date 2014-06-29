@@ -316,26 +316,8 @@ public class Photon extends Activity {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
             byte[] b = baos.toByteArray();
-            HttpClient httpclient = new DefaultHttpClient();
+            
             String encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
-            HttpPost httppost = new HttpPost(url);
-            File file = new File(fileLocation);
-            ContentBody fb = new FileBody(file, "image/jpeg");
-            MultipartEntity entity = new MultipartEntity(
-                    HttpMultipartMode.STRICT);
-            entity.addPart("file", fb);
-            httppost.setEntity(entity);
-            HttpResponse response = null;
-            try {
-                response = httpclient.execute(httppost);
-            } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            System.out.println("file " + response.toString() + "" + "from server");
 
             JsonObject image = new JsonObject();
             image.addProperty("latitude", lat);
