@@ -7,11 +7,13 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.*;
@@ -33,6 +35,7 @@ import org.apache.http.client.HttpClient;
 
 import org.apache.http.impl.client.DefaultHttpClient;
 
+
 public class Photon extends Activity {
 
     private float lastX = 0;
@@ -43,6 +46,8 @@ public class Photon extends Activity {
     static final int RESULT_LOAD_IMAGE =2;
     static final int REQUEST_TAKE_PHOTO = 1;
     public static String mCurrentPhotoPath;
+    public static int COMPRESSIONRATIO=40;
+    private int SCALE=4;
     private View [] views;
 
     public void loadFile(){
@@ -239,62 +244,24 @@ public class Photon extends Activity {
         }.start();
 
     }
-    private void addImages(JsonObject object){
+    private void addImages(JsonArray object){
 
-        Drawable [] drawables = new Drawable[3];
-        drawables[0]=getResources().getDrawable(R.drawable.icon_256);
-        drawables[1]=getResources().getDrawable(R.drawable.shutter);
-        drawables[2]=getResources().getDrawable(R.drawable.ic_launcher);
-        for(int i =0; i < drawables.length; i++){
-            ImageView image= new ImageView(getApplicationContext());
-            image.setBackground(drawables[0]);
-            image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+        for(int i =0; i < object.size(); i++) {
+            Log.d(DEBUG_TAG,"adding image: "+ i);
+            JsonElement imageElement = object.get(i);
+            String encoding = imageElement.getAsJsonObject().get("base64Encoding").getAsString();
+            byte[] decodedString = Base64.decode(encoding, Base64.DEFAULT);
+            BitmapDrawable drawable = new BitmapDrawable(BitmapFactory.decodeByteArray(decodedString, 0,
+                    decodedString.length));
+            ImageView image = new ImageView(getApplicationContext());
+            image.setBackground(drawable);
+            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
             gallery.addView(image);
         }
 
     }
-    public void recieveFromServer(){
-        new Thread() {
-            public void run() {
 
-
-                try {
-                    HttpClient Client = new DefaultHttpClient();
-
-                    // Create URL string
-
-                    URL url = new URL("http://thelittlemonkey.asuscomm.com");
-
-                    //Log.i("httpget", URL);
-
-                    try {
-                        String SetServerString = "";
-
-                        // Create Request to server and get response
-
-
-                        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-                        String str;
-                        while ((str = in.readLine()) != null) {
-                            SetServerString += str;
-                        }
-                        in.close();
-                        Log.d(DEBUG_TAG, SetServerString);
-                    } catch (IOException e) {
-                        Log.d(DEBUG_TAG, "Error:" + e.getMessage());
-                        Log.d(DEBUG_TAG, "Fail");
-                    }
-                } catch (MalformedURLException e) {
-
-
-                    Log.d(DEBUG_TAG, e.getMessage());
-                    Log.d(DEBUG_TAG, "Fail!");
-
-                }
-            }
-        }.start();
-
-    }
     public void sendImage(String fileLocation,String url) {
 
         float lat = 0;
@@ -309,9 +276,12 @@ public class Photon extends Activity {
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Bitmap bm = BitmapFactory.decodeFile(fileLocation);
-            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
-            byte[] b = baos.toByteArray();
+            bm=bm.createScaledBitmap(bm,Math.round(bm.getWidth()/SCALE),Math.round(bm.getHeight()/SCALE),
+                    false);
+            bm.compress(Bitmap.CompressFormat.JPEG, COMPRESSIONRATIO, baos); //bm is the bitmap object
 
+            byte[] b = baos.toByteArray();
+            Log.d(DEBUG_TAG,"IMAGE-SIZE: " + b.length/1024+"KB");
             String encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
 
             JsonObject image = new JsonObject();
@@ -321,23 +291,33 @@ public class Photon extends Activity {
             Log.d(DEBUG_TAG,image.toString());
             Future<JsonObject> myjson;
             myjson = Ion.with(this, url)
-                    .setHeader("Content-Type","application/json")
-                    .setHeader("mime type","application/json")
+                    .setTimeout(60 * 60 * 1000)
+                    .setHeader("Content-Type", "application/json")
+                    .setHeader("mime type", "application/json")
                     .setJsonObjectBody(image)
                     .asJsonObject()
+
                     .setCallback(new FutureCallback<JsonObject>() {
                         @Override
-                        public void onCompleted(Exception e, JsonObject  result) {
+                        public void onCompleted(Exception e, JsonObject result) {
                             // do stuff with the result or error
                             if (e != null) {
-                                Log.d(DEBUG_TAG,e.getMessage());
+                                Log.d(DEBUG_TAG, e.getMessage());
                             } else {
-                                Log.d(Photon.DEBUG_TAG, result.toString());
+                                if (result == null) {
+                                    Log.d(DEBUG_TAG, "null response");
+                                } else {
+                                    //Log.d(Photon.DEBUG_TAG, result.toString());
+
+                                    JsonArray images = result.getAsJsonArray("array");
+                                    Log.d(Photon.DEBUG_TAG, "" + images.size());
+                                    addImages(images);
+                                }
                             }
-                            // addImages(result);
+
                         }
                     });
-            Log.d(DEBUG_TAG,myjson.toString());
+            //Log.d(DEBUG_TAG,myjson.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -347,13 +327,6 @@ public class Photon extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-
-            ImageView image = new ImageView(getApplicationContext());
-            Drawable res = new BitmapDrawable(getResources(), mCurrentPhotoPath);
-            image.setBackground(res);
-            image.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            gallery.addView(image);
-
             sendToServer();
 
         }
@@ -366,10 +339,7 @@ public class Photon extends Activity {
             String picturePath = cursor.getString(columnIndex);
             mCurrentPhotoPath=picturePath;
             cursor.close();
-            ImageView image =new ImageView(getApplicationContext());
-            image.setImageBitmap(BitmapFactory.decodeFile(picturePath));
-            image.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            gallery.addView(image);
+
 
             sendToServer();
         }
