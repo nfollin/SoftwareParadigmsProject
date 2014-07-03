@@ -11,18 +11,23 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "rest")
 public class ImageController {
 
-
+	public ImageController(){
+		
+	}
     @RequestMapping(value = "image", method = RequestMethod.POST)
-    @ResponseBody	
-    public Image[] putImageAndReturn(Image image) {
+    	
+    public @ResponseBody ImageArray putImageAndReturn(@RequestBody Image image) {
         System.out.println(image.toString());
        JsonObject result = new JsonObject();
         result.addProperty("test","value");
 
-       Image [] response = new Image[2];
+       Image [] response = new Image[3];
        response[0]= new Image(12,23,"ast");
        response[1]= new Image(12,23,"asdf");
-       return response;
+       response[2]=image;
+       ImageArray jsonResponse = new ImageArray();
+       jsonResponse.setArray(response);
+       return jsonResponse;
     }
 
 

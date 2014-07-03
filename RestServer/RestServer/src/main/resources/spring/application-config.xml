@@ -4,7 +4,21 @@
 	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-   <bean class = "org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+  <bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+        <property name="favorPathExtension" value="false" />
+        <property name="favorParameter" value="false" />
+        <property name="ignoreAcceptHeader" value="false" />
+        <property name="mediaTypes" >
+            <value>
+                atom=application/atom+xml
+                html=text/html
+                json=application/json
+                *=*/*
+            </value>
+        </property>                    
+    </bean>
+    
+    <!--  <bean class = "org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
     <property name="messageConverters">
         <array>
             <bean class = "org.springframework.http.converter.StringHttpMessageConverter">
@@ -12,7 +26,19 @@
             </bean>
         </array>
     </property>
-</bean>
+</bean>-->
+<!--  <bean id="contentNegotiatingViewResolver" class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+    <property name="mediaTypes">
+        <map>
+            <entry key="json" value="application/json"/>
+        </map>
+    </property>
+    <property name="defaultViews">
+        <list>
+            <bean class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"/>
+        </list>
+    </property>
+</bean>-->
          <context:component-scan
             base-package="com.gwu.controller"/> 
 

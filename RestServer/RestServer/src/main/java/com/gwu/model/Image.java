@@ -1,7 +1,10 @@
 package com.gwu.model;
-import com.google.gson.*;
-public class Image {
+import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.*;
+public class Image implements Serializable{
+	private static final long serialVersionUID = 1L;
     private float lat=0;
     private float longitude=0;
     private String base64Encoding=null;

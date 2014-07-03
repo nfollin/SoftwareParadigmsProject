@@ -15,14 +15,12 @@ import android.util.Base64;
 import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.*;
-import org.apache.http.HttpResponse;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.Future;
-
 import android.content.Intent;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -31,13 +29,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ViewFlipper;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
+
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class Photon extends Activity {
@@ -46,7 +39,7 @@ public class Photon extends Activity {
     public static final String DEBUG_TAG = "Photon::";
     protected ViewFlipper gallery;
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    static final String RESTURL="http://localhost:8080/RESTfulImg/rest/file/upload";
+    static final String RESTURL="http://10.0.0.50:8080/Photon-Server/rest/image";
     static final int RESULT_LOAD_IMAGE =2;
     static final int REQUEST_TAKE_PHOTO = 1;
     public static String mCurrentPhotoPath;
@@ -303,10 +296,11 @@ public class Photon extends Activity {
 
     }
     public void sendImage(String fileLocation,String url) {
-        Bitmap bm = BitmapFactory.decodeFile(fileLocation);
+
         float lat = 0;
         float longitude = 0;
         try {
+            Log.d(DEBUG_TAG,fileLocation);
             ExifInterface geoData = new ExifInterface(fileLocation);
             float[] data = new float[2];
             geoData.getLatLong(data);
@@ -314,30 +308,36 @@ public class Photon extends Activity {
             longitude = data[1];
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Bitmap bm = BitmapFactory.decodeFile(fileLocation);
             bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
             byte[] b = baos.toByteArray();
-            
+
             String encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
 
             JsonObject image = new JsonObject();
-            image.addProperty("latitude", lat);
-            image.addProperty("longitutde", longitude);
-            image.addProperty("imageBase64", encodedImage);
-
+            image.addProperty("lat", lat);
+            image.addProperty("longitude", longitude);
+            image.addProperty("base64Encoding", encodedImage);
+            Log.d(DEBUG_TAG,image.toString());
             Future<JsonObject> myjson;
             myjson = Ion.with(this, url)
+                    .setHeader("Content-Type","application/json")
+                    .setHeader("mime type","application/json")
                     .setJsonObjectBody(image)
                     .asJsonObject()
-
                     .setCallback(new FutureCallback<JsonObject>() {
                         @Override
-                        public void onCompleted(Exception e, JsonObject result) {
+                        public void onCompleted(Exception e, JsonObject  result) {
                             // do stuff with the result or error
-                            Log.d(Photon.DEBUG_TAG,result.toString());
-                           // addImages(result);
+                            if (e != null) {
+                                Log.d(DEBUG_TAG,e.getMessage());
+                            } else {
+                                Log.d(Photon.DEBUG_TAG, result.toString());
+                            }
+                            // addImages(result);
                         }
                     });
-
+            Log.d(DEBUG_TAG,myjson.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -364,6 +364,7 @@ public class Photon extends Activity {
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             String picturePath = cursor.getString(columnIndex);
+            mCurrentPhotoPath=picturePath;
             cursor.close();
             ImageView image =new ImageView(getApplicationContext());
             image.setImageBitmap(BitmapFactory.decodeFile(picturePath));
