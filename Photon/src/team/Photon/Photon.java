@@ -163,6 +163,7 @@ public class Photon extends Activity {
 
     public void onClick(View v) {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
         gallery.removeAllViews();
 
 
@@ -259,6 +260,7 @@ public class Photon extends Activity {
             image.setScaleType(ImageView.ScaleType.FIT_CENTER);
             gallery.addView(image);
         }
+        new File(mCurrentPhotoPath).delete();
 
     }
 
