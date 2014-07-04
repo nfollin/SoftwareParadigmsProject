@@ -1,13 +1,11 @@
 package team.Photon;
 
 import android.app.Activity;
-
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,8 +16,6 @@ import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.*;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.Future;
@@ -31,9 +27,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ViewFlipper;
-import org.apache.http.client.HttpClient;
 
-import org.apache.http.impl.client.DefaultHttpClient;
 
 
 public class Photon extends Activity {
@@ -231,12 +225,9 @@ public class Photon extends Activity {
     public void sendToServer(){
         new Thread() {
             public void run() {
-
-
                 try {
+
                     sendImage(mCurrentPhotoPath,RESTURL);
-
-
                 } catch (Exception e) {
                     // handle exception here
                     e.printStackTrace();
@@ -246,21 +237,25 @@ public class Photon extends Activity {
 
     }
     private void addImages(JsonArray object){
-
-
         for(int i =0; i < object.size(); i++) {
             Log.d(DEBUG_TAG,"adding image: "+ i);
             JsonElement imageElement = object.get(i);
             String encoding = imageElement.getAsJsonObject().get("base64Encoding").getAsString();
             byte[] decodedString = Base64.decode(encoding, Base64.DEFAULT);
-            BitmapDrawable drawable = new BitmapDrawable(BitmapFactory.decodeByteArray(decodedString, 0,
-                    decodedString.length));
+            Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0,
+                    decodedString.length);
+
             ImageView image = new ImageView(getApplicationContext());
-            image.setBackground(drawable);
+
+
+            image.setImageBitmap(bitmap);
+
+
+            image.setAdjustViewBounds(true);
             image.setScaleType(ImageView.ScaleType.FIT_CENTER);
             gallery.addView(image);
         }
-        new File(mCurrentPhotoPath).delete();
+
 
     }
 
@@ -278,6 +273,8 @@ public class Photon extends Activity {
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Bitmap bm = BitmapFactory.decodeFile(fileLocation);
+            //SCALE = Math.min(gallery.getWidth()/bm.getWidth(),gallery.getWidth()/bm.getHeight());
+            Log.d(DEBUG_TAG,SCALE+"");
             bm=bm.createScaledBitmap(bm,Math.round(bm.getWidth()/SCALE),Math.round(bm.getHeight()/SCALE),
                     false);
             bm.compress(Bitmap.CompressFormat.JPEG, COMPRESSIONRATIO, baos); //bm is the bitmap object
