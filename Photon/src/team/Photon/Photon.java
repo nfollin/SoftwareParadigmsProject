@@ -5,7 +5,6 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -36,12 +35,12 @@ public class Photon extends Activity {
     public static final String DEBUG_TAG = "Photon::";
     protected ViewFlipper gallery;
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    static final String RESTURL="http://10.0.0.50:8080/Photon-Server/rest/image";
+    static final String RESTURL="http://thelittlemonkey.asuscomm.com:8080/Photon-Server/rest/image";
     static final int RESULT_LOAD_IMAGE =2;
     static final int REQUEST_TAKE_PHOTO = 1;
     public static String mCurrentPhotoPath;
-    public static int COMPRESSIONRATIO=40;
-    private int SCALE=4;
+    public static int COMPRESSIONRATIO=20;
+    private int SCALE=5;
     private View [] views;
 
     public void loadFile(){
@@ -101,7 +100,7 @@ public class Photon extends Activity {
         }
         final View[] views = (View []) getLastNonConfigurationInstance();
         if(views !=null) {
-            Log.d(DEBUG_TAG, views.length + " views in array");
+           // Log.d(DEBUG_TAG, views.length + " views in array");
 
             for (int i = 0; i < views.length; i++) {
 
@@ -226,7 +225,7 @@ public class Photon extends Activity {
         new Thread() {
             public void run() {
                 try {
-
+                    Log.d(DEBUG_TAG,RESTURL);
                     sendImage(mCurrentPhotoPath,RESTURL);
                 } catch (Exception e) {
                     // handle exception here
@@ -274,7 +273,7 @@ public class Photon extends Activity {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Bitmap bm = BitmapFactory.decodeFile(fileLocation);
             //SCALE = Math.min(gallery.getWidth()/bm.getWidth(),gallery.getWidth()/bm.getHeight());
-            Log.d(DEBUG_TAG,SCALE+"");
+           // Log.d(DEBUG_TAG,SCALE+"");
             bm=bm.createScaledBitmap(bm,Math.round(bm.getWidth()/SCALE),Math.round(bm.getHeight()/SCALE),
                     false);
             bm.compress(Bitmap.CompressFormat.JPEG, COMPRESSIONRATIO, baos); //bm is the bitmap object
@@ -287,7 +286,7 @@ public class Photon extends Activity {
             image.addProperty("lat", lat);
             image.addProperty("longitude", longitude);
             image.addProperty("base64Encoding", encodedImage);
-            Log.d(DEBUG_TAG,image.toString());
+            //Log.d(DEBUG_TAG,image.toString());
             Future<JsonObject> myjson;
             myjson = Ion.with(this, url)
                     .setTimeout(60 * 60 * 1000)
@@ -309,7 +308,7 @@ public class Photon extends Activity {
                                     //Log.d(Photon.DEBUG_TAG, result.toString());
 
                                     JsonArray images = result.getAsJsonArray("array");
-                                    Log.d(Photon.DEBUG_TAG, "" + images.size());
+                                    Log.d(Photon.DEBUG_TAG, "Number of images from server: " + images.size());
                                     addImages(images);
                                 }
                             }
